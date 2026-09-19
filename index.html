@@ -50,6 +50,20 @@ body {
 	justify-content: center;
 	align-items: center;
 	visibility: hidden;
+	overflow: hidden;
+}
+
+/* Fills any empty space around the picture with a dark, blurred copy of it. */
+#status::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background: url("index.png?v=3") center / cover no-repeat;
+	filter: blur(40px) brightness(0.38) saturate(0.95);
+	transform: scale(1.2);
 }
 
 #status-stage {
@@ -70,6 +84,16 @@ body {
 	object-fit: fill;
 	user-select: none;
 	-webkit-user-drag: none;
+	/* Soft edges (only on the sides that touch the blurred background). */
+	-webkit-mask-image: linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
+	mask-image: linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
+}
+
+@media (min-aspect-ratio: 3/2) {
+	#status-splash {
+		-webkit-mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent);
+		mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent);
+	}
 }
 
 #status-loader {
