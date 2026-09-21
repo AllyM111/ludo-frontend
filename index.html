@@ -292,13 +292,13 @@ body::before {
 		<div id="menu-overlay">
 			<div id="menu-stage">
 				<div id="menu-art"></div>
-				<div id="menu-version">v6</div>
+				<div id="menu-version">v7</div>
 			</div>
 		</div>
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","mainPack":"index.pck?v=5","experimentalVK":false,"fileSizes":{"index.pck?v=5":2706912,"index.wasm":37902138},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","mainPack":"index.pck?v=7","experimentalVK":false,"fileSizes":{"index.pck?v=7":2706912,"index.wasm":37902138},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -359,7 +359,6 @@ const engine = new Engine(GODOT_CONFIG);
 	let started = false;
 	let startedAt = 0;
 	let shown = false;
-	let okCount = 0;
 	let badCount = 0;
 
 	BUTTONS.forEach(function (b) {
@@ -407,6 +406,7 @@ const engine = new Engine(GODOT_CONFIG);
 		const cy = r.top + (gy / BASE_H) * r.height;
 		const base = { bubbles: true, cancelable: true, view: window, clientX: cx, clientY: cy, screenX: cx, screenY: cy, button: 0 };
 		try { canvas.focus(); } catch (e) { /* ignore */ }
+		watch();
 		canvas.dispatchEvent(new MouseEvent('mousemove', Object.assign({ buttons: 0 }, base)));
 		canvas.dispatchEvent(new MouseEvent('mousedown', Object.assign({ buttons: 1 }, base)));
 		setTimeout(function () {
@@ -441,39 +441,67 @@ const engine = new Engine(GODOT_CONFIG);
 		overlay.classList.toggle('show', v);
 	}
 
+	// One look at the game screen. Returns true when the game's own main menu is on screen.
+	function menuVisible() {
+		const a = isYellow(425, 298);
+		const b = isYellow(674, 298);
+		if (a === null || b === null) {
+			return null;
+		}
+		return a && b;
+	}
+
 	function tick() {
 		if (!started) {
 			return;
 		}
-		const a = isYellow(425, 298);
-		const b = isYellow(674, 298);
-		if (a === null || b === null) {
+		const on = menuVisible();
+		if (on === null) {
 			// Cannot tell what the game is showing: fall back to the game's own menu.
 			setShown(false);
 			return;
 		}
-		if (a && b) {
-			okCount++;
+		if (on) {
 			badCount = 0;
-			if (okCount >= 2) {
-				setShown(true);
-			}
+			setShown(true);          // show as soon as the game draws its menu
 		} else {
 			badCount++;
-			okCount = 0;
-			// the game needs a moment to draw its first frame, so ignore "not menu" for the first 1.5 s
-			if (badCount >= 2 && Date.now() - startedAt > 1500) {
+			// the game needs a moment to draw its first frame, and one odd frame must not hide the menu
+			if (badCount >= 3 && Date.now() - startedAt > 1500) {
 				setShown(false);
 			}
 		}
 	}
+
+	// Look at every frame for a short time after any click or tap (that is when the game changes
+	// screen), and a few times per second the rest of the time.
+	let watchUntil = 0;
+	let lastLook = 0;
+
+	function watch() {
+		watchUntil = performance.now() + 2500;
+	}
+
+	function loop(now) {
+		const gap = now < watchUntil ? 0 : (shown ? 150 : 100);
+		if (now - lastLook >= gap) {
+			lastLook = now;
+			tick();
+		}
+		requestAnimationFrame(loop);
+	}
+
+	['mousedown', 'mouseup', 'pointerdown', 'pointerup', 'touchstart', 'touchend', 'click', 'keydown'].forEach(function (name) {
+		window.addEventListener(name, watch, true);
+	});
 
 	window.__afriMenuStart = function () {
 		started = true;
 		startedAt = Date.now();
 		layout();
 		setShown(true);
-		setInterval(tick, 250);
+		watch();
+		requestAnimationFrame(loop);
 	};
 
 	window.addEventListener('resize', layout);
