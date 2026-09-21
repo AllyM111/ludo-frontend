@@ -9,13 +9,16 @@ FILES IN THIS PACK
                         loading screen). Godot fills in the $GODOT_... parts on every export.
   afri_ui_font.tres     font with the icon pack + emoji, so icons show on web (the web export has no emoji font)
   loading_splash.png    the loading picture
+  background_new.png    the new scenic background used behind every game page (1672 x 941)
 
 ONE-TIME SETUP IN GODOT (4.x)
  1. Copy custom_shell.html, afri_ui_font.tres and loading_splash.png into your project folder (next to Main.gd).
  2. Project > Project Settings > GUI > Theme > Custom Font  =  res://afri_ui_font.tres
  3. Project > Project Settings > Application > Boot Splash > Image  =  res://loading_splash.png
  4. Project > Export > Web > HTML > Custom HTML Shell  =  res://custom_shell.html
- 5. Open Main.gd and use Search/Replace (Ctrl+Shift+F) for these texts:
+ 5. Replace the old background picture in your project (kigali_pic1_background.png) with background_new.png
+    (same file name is easiest: copy background_new.png over it and let Godot re-import).
+ 6. Open Main.gd and use Search/Replace (Ctrl+Shift+F) for these texts:
       "CREATE ROOM"                                   ->  "FIND MATCH"
       "create_room"  (only the one SENT to the server) ->  "find_match"
       "Create a private room or join friends with a room code."
@@ -28,7 +31,7 @@ ONE-TIME SETUP IN GODOT (4.x)
     (the server, ludo-backend/server.js, already understands "find_match")
 
 EVERY TIME YOU EXPORT
- - Before exporting, open custom_shell.html and change  const AFRI_BUILD = 'v8';  to a new number (v9, v10 ...).
+ - Before exporting, open custom_shell.html and change  const AFRI_BUILD = 'v9';  to a new number (v9, v10 ...).
    The number is shown in the corner of the menu and makes browsers download the new game file.
  - Export to a folder, then upload ALL exported files to the ludo-frontend repo (index.html, index.pck, index.js,
    index.wasm, index.png, ...). Check that index.pck on GitHub has the new size.
