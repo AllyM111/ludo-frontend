@@ -352,9 +352,9 @@ body::before {
 	position: absolute;
 	z-index: 4;
 	left: 50%;
-	top: 7%;
+	top: 24%;
 	transform: translateX(-50%);
-	width: min(58%, 780px);
+	width: min(42%, 780px);
 	min-width: 620px;
 	max-width: 780px;
 	padding: 26px 38px 28px;
@@ -653,8 +653,9 @@ const engine = new Engine(GODOT_CONFIG);
 			el.addEventListener('click', function (ev) {
 				ev.preventDefault();
 				if (b.field) activeField = b.field;
+				if (b.label === 'Back') forcedOnlineUntil = 0;
 				if (b.label === 'Online multiplayer' && b.gx === 550 && b.gy === 483) {
-					forcedOnlineUntil = Date.now() + 6000;
+					forcedOnlineUntil = Date.now() + 86400000;
 				}
 				forwardClick(b.gx, b.gy);
 			});
