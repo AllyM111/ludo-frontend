@@ -441,6 +441,13 @@ body::before {
 .pro-online .corner.tr { right: 0; top: 0; border-left: 0; border-bottom: 0; border-radius: 0 28px 0 0; }
 .pro-online .corner.bl { left: 0; bottom: 0; border-right: 0; border-top: 0; border-radius: 0 0 0 28px; }
 .pro-online .corner.br { right: 0; bottom: 0; border-left: 0; border-top: 0; border-radius: 0 0 28px 0; }
+#menu-overlay[data-screen="online"] ~ #canvas,
+body:has(#menu-overlay[data-screen="online"]) #canvas {
+	visibility: hidden !important;
+}
+#menu-overlay[data-screen="online"] {
+	background: #031a33 !important;
+}
 #menu-overlay[data-screen="online"] .pro-menu { display: none; }
 #menu-overlay[data-screen="online"] .pro-online { display: block; }
 #menu-overlay:not([data-screen="online"]) .pro-online { display: none; }
@@ -519,17 +526,17 @@ body::before {
 		<div id="menu-overlay" data-screen="menu">
 			<div id="menu-stage">
 				<div id="menu-art"></div>
-				<div class="pro-menu" aria-hidden="true">
+				<div class="pro-menu" aria-hidden="false">
 					<div class="crown">👑</div>
 					<h1 class="brand">AFRI LUDO</h1>
 					<div class="subtitle">Kigali • Rwanda Edition</div>
 					<div class="menu-title">Welcome to Afri Ludo</div>
 					<div class="menu-buttons">
-						<div class="menu-button play">PLAY</div>
-						<div class="menu-button">🌐 ONLINE MULTIPLAYER</div>
-						<div class="menu-button">🏆 LEADERBOARD</div>
-						<div class="menu-button">👤 PROFILE</div>
-						<div class="menu-button">⚙ SETTINGS</div>
+						<div class="menu-button play" data-pro-action="play">PLAY</div>
+						<div class="menu-button" data-pro-action="online">🌐 ONLINE MULTIPLAYER</div>
+						<div class="menu-button" data-pro-action="leaderboard">🏆 LEADERBOARD</div>
+						<div class="menu-button" data-pro-action="profile">👤 PROFILE</div>
+						<div class="menu-button" data-pro-action="settings">⚙ SETTINGS</div>
 					</div>
 					<div class="footer">African board • Global players</div>
 				</div>
@@ -557,7 +564,7 @@ body::before {
 					<div class="online-empty"><strong>No players yet.</strong>Tap FIND MATCH, or join a friend's room.</div>
 					<div class="online-back">← &nbsp; BACK</div>
 				</div>
-				<div id="menu-version">v13</div>
+				<div id="menu-version">v14</div>
 			</div>
 		</div>
 
@@ -565,7 +572,7 @@ body::before {
 		<script>
 const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","mainPack":"index.pck?v=9","experimentalVK":false,"fileSizes":{"index.pck?v=9":2504640,"index.wasm":37902138},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 // ---- Afri Ludo tweaks (kept here so every Godot export gets them) ----
-const AFRI_BUILD = 'v13';                 // change this after every export: it forces browsers to fetch the new game file
+const AFRI_BUILD = 'v14';                 // change this after every export: it forces browsers to fetch the new game file
 GODOT_CONFIG.canvasResizePolicy = 0;      // the page below sizes the game canvas itself
 (function () {
 	const pck = GODOT_CONFIG.executable + '.pck';
@@ -680,6 +687,36 @@ const engine = new Engine(GODOT_CONFIG);
 			hits.push({ el: el, b: b });
 		});
 	});
+
+	// The professional HTML menu is the visible menu. Its buttons must have their own
+	// click targets because their positions are different from the original Godot picture.
+	const proMenu = document.querySelector('.pro-menu');
+	if (proMenu) {
+		proMenu.style.pointerEvents = 'auto';
+		proMenu.querySelectorAll('[data-pro-action]').forEach(function (button) {
+			button.addEventListener('click', function (ev) {
+				ev.preventDefault();
+				ev.stopPropagation();
+				const action = button.getAttribute('data-pro-action');
+				if (action === 'online') {
+					activeField = null;
+					forcedOnlineUntil = Date.now() + 86400000;
+					setScreen('online');
+					return;
+				}
+				const target = {
+					play: [550, 309],
+					leaderboard: [550, 426],
+					profile: [550, 480],
+					settings: [550, 534]
+				}[action];
+				if (target) {
+					forwardClick(target[0], target[1]);
+					watch();
+				}
+			});
+		});
+	}
 
 	function layout() {
 		const vv = window.visualViewport;
