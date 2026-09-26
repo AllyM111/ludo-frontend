@@ -345,8 +345,23 @@ body::before {
 
 /* --- Afri Ludo online multiplayer HTML skin --- */
 #menu-overlay[data-screen="online"] #menu-art {
-	opacity: 0.18;
-	filter: blur(1px) brightness(0.48) saturate(0.9);
+	opacity: 0;
+	visibility: hidden;
+}
+#menu-overlay[data-screen="online"]::before {
+	background: var(--img) center / cover no-repeat;
+	filter: blur(18px) brightness(0.48) saturate(0.9);
+	transform: scale(1.08);
+}
+#menu-overlay[data-screen="online"] .pro-online {
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: min(78%, 980px);
+	min-width: 0;
+	max-width: 980px;
+	padding: 34px 42px 32px;
+	border-radius: 30px;
 }
 .pro-online {
 	position: absolute;
@@ -542,7 +557,7 @@ body::before {
 					<div class="online-empty"><strong>No players yet.</strong>Tap FIND MATCH, or join a friend's room.</div>
 					<div class="online-back">← &nbsp; BACK</div>
 				</div>
-				<div id="menu-version">v12</div>
+				<div id="menu-version">v13</div>
 			</div>
 		</div>
 
@@ -550,7 +565,7 @@ body::before {
 		<script>
 const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","mainPack":"index.pck?v=9","experimentalVK":false,"fileSizes":{"index.pck?v=9":2504640,"index.wasm":37902138},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 // ---- Afri Ludo tweaks (kept here so every Godot export gets them) ----
-const AFRI_BUILD = 'v12';                 // change this after every export: it forces browsers to fetch the new game file
+const AFRI_BUILD = 'v13';                 // change this after every export: it forces browsers to fetch the new game file
 GODOT_CONFIG.canvasResizePolicy = 0;      // the page below sizes the game canvas itself
 (function () {
 	const pck = GODOT_CONFIG.executable + '.pck';
@@ -654,8 +669,10 @@ const engine = new Engine(GODOT_CONFIG);
 				ev.preventDefault();
 				if (b.field) activeField = b.field;
 				if (b.label === 'Back') forcedOnlineUntil = 0;
-				if (b.label === 'Online multiplayer' && b.gx === 550 && b.gy === 483) {
+				if (b.label === 'Online multiplayer' && b.gx === 550 && (b.gy === 372 || b.gy === 483)) {
+					activeField = null;
 					forcedOnlineUntil = Date.now() + 86400000;
+					setScreen('online');
 				}
 				forwardClick(b.gx, b.gy);
 			});
